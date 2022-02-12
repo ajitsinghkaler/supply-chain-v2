@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.0;
 
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+
+
 contract Item {
     uint public priceInWei;
     uint public pricePaid;
@@ -27,7 +30,7 @@ contract Item {
     }
 }
 
-contract ItemManager{
+contract ItemManager is Ownable{
     mapping(uint => S_item) public items;
 
     struct S_item {
@@ -43,7 +46,7 @@ contract ItemManager{
 
     uint itemIndex;
 
-    function createItem(string memory _identifier, uint _price) public {
+    function createItem(string memory _identifier, uint _price) public onlyOwner {
         Item item = new Item(this, _price, itemIndex);
         items[itemIndex]._item = item;
         items[itemIndex]._identifier = _identifier;
@@ -60,7 +63,7 @@ contract ItemManager{
         emit SupplyChainStep(itemIndex, uint(items[_itemIndex]._state), address(items[_itemIndex]._item));
     }
 
-    function triggerDelivery(uint _itemIndex) public {
+    function triggerDelivery(uint _itemIndex) public onlyOwner{
         require(items[_itemIndex]._state == SupplyChainState.Paid, "Item has been already paid");
         items[_itemIndex]._state = SupplyChainState.Delivered;
         emit SupplyChainStep(itemIndex, uint(items[_itemIndex]._state), address(items[_itemIndex]._item));
